@@ -9,28 +9,33 @@
 # Please note, this is a basic script, there is no error handling and there are
 # no real tests for any exceptions. Patches welcome!
 
-import json, urllib, subprocess, sys
+import json
+import urllib
+import subprocess
+import sys
 
-url_base="http://admin.ci.centos.org:8080"
+url_base = "http://admin.ci.centos.org:8080"
 
 # This file was generated on your slave.  See https://wiki.centos.org/QaWiki/CI/GettingStarted
-api=open('duffy.key').read().strip()
+api = open('duffy.key').read().strip()
 
-ver="7"
-arch="x86_64"
-count=1
-git_url="https://example.com/test.git"
+ver = "7"
+arch = "x86_64"
+count = 1
+git_url = "https://example.com/test.git"
 
-get_nodes_url="%s/Node/get?key=%s&ver=%s&arch=%s&count=%s" % (url_base,api,ver,arch,count)
+get_nodes_url = "%s/Node/get?key=%s&ver=%s&arch=%s&count=%s" % (url_base, api, ver, arch, count)
 
-dat=urllib.urlopen(get_nodes_url).read()
-b=json.loads(dat)
+dat = urllib.urlopen(get_nodes_url).read()
+b = json.loads(dat)
 for h in b['hosts']:
-  cmd="ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s 'yum -y install git && git clone %s tests && cd tests && chmod +x ./run_tests && ./run_tests'" % (h, git_url)
-  print cmd
-  rtn_code=subprocess.call(cmd, shell=True)
+    cmd = "ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s " \
+          "'yum -y install git && git clone %s tests && cd tests && chmod +x ./run_tests && " \
+          "./run_tests'" % (h, git_url)
+    print(cmd)
+    rtn_code = subprocess.call(cmd, shell=True)
   
-done_nodes_url="%s/Node/done?key=%s&ssid=%s" % (url_base, api, b['ssid'])
-das=urllib.urlopen(done_nodes_url).read()
+done_nodes_url = "%s/Node/done?key=%s&ssid=%s" % (url_base, api, b['ssid'])
+das = urllib.urlopen(done_nodes_url).read()
 
 sys.exit(rtn_code)
